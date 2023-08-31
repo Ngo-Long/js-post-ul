@@ -1,4 +1,4 @@
-# Post UI Project :heart_eyes:
+# Post UI Project :heart_eyes: :heart_eyes:
 
 View live demo: [https://paulnguyen-mn.github.io/posts-ui/](https://paulnguyen-mn.github.io/posts-ui/)
 This simple website has 3 pages:
