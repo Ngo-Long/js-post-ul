@@ -27,12 +27,12 @@ const postApi = {
   },
 
   // DEMO: want to update more something
-  updateFormData(data) {
-    const url = `/post/${data.id}`;
-    return axiosClient.patch(url, data, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-  },
+  // updateFormData(data) {
+  //   const url = `/post/${data.id}`;
+  //   return axiosClient.patch(url, data, {
+  //     headers: { 'Content-Type': 'multipart/form-data' },
+  //   });
+  // },
 };
 
 export default postApi;

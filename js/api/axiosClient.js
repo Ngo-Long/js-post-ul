@@ -7,8 +7,6 @@ import axios from 'axios';
 
 //  tạo một instance tên là axiosClient
 const axiosClient = axios.create({
-  // Đối tượng chứa các cấu hình:
-
   // - địa chỉ cơ sở (base URL) mà tất cả các yêu cầu sẽ được xây dựng trên nó
   baseURL: 'https://js-post-api.herokuapp.com/api',
   // - đối tượng chứa các tiêu đề (headers) sẽ được gắn vào mỗi yêu cầu.
