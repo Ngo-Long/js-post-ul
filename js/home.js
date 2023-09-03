@@ -1,31 +1,42 @@
-import postApi from './api/postApi';
-import { setElementTextContent, setElementSourceBySelector } from './utils/index';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+// to use fromNow function
+dayjs.extend(relativeTime);
 
+import postApi from './api/postApi';
+import {
+  setElementTextContent,
+  setElementSourceBySelector,
+  setImageDefaultSourceOnError,
+  truncateText,
+} from './utils/index';
+
+// ----------------------------------------------------------
 function createPostElement(post) {
   if (!post) return;
 
-  try {
-    // find and clone template
-    const postTemplate = document.getElementById('postTemplate');
-    if (!postTemplate) return;
+  // find and clone template
+  const postTemplate = document.getElementById('postTemplate');
+  if (!postTemplate) return;
 
-    const liElement = postTemplate.content.firstElementChild.cloneNode(true);
-    if (!liElement) return;
+  const liElement = postTemplate.content.firstElementChild.cloneNode(true);
+  if (!liElement) return;
 
-    // updata title, desc, author, thumbnail
-    setElementTextContent(liElement, '[data-id="title"]', post.title);
-    setElementTextContent(liElement, '[data-id="description"]', post.description);
-    setElementTextContent(liElement, '[data-id="author"]', post.author);
-    setElementSourceBySelector(liElement, '[data-id="thumbnail"]', post.imageUrl);
+  // updata title, desc, author, thumbnail
+  setElementTextContent(liElement, '[data-id="title"]', post.title);
+  setElementTextContent(liElement, '[data-id="description"]', post.description);
+  setElementTextContent(liElement, '[data-id="description"]', truncateText(post.description, 100));
+  setElementTextContent(liElement, '[data-id="author"]', post.author);
+  setElementSourceBySelector(liElement, '[data-id="thumbnail"]', post.imageUrl);
+  setImageDefaultSourceOnError(liElement);
 
-    return liElement;
-  } catch (error) {
-    console.log('faild to create post item', error);
-  }
+  // calculate timespan
+  setElementTextContent(liElement, '[data-id="timeSpan"]', ` - ${dayjs(post.updatedAt).fromNow()}`);
+
+  return liElement;
 }
 
 function renderPostList(postList) {
-  // console.log(postList);
   if (!Array.isArray(postList) || postList.length === 0) return;
 
   const ulElement = document.getElementById('postList');

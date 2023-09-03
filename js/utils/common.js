@@ -19,3 +19,22 @@ export function setElementSourceBySelector(container, elementSelector, source) {
   const targetElement = container.querySelector(elementSelector);
   if (targetElement) targetElement.src = source;
 }
+
+export function setImageDefaultSourceOnError(targetElement) {
+  if (!targetElement) return;
+
+  targetElement.addEventListener('error', () => {
+    targetElement.src = 'https://placehold.co/600x400?text=Thumbnail';
+  });
+}
+
+export function truncateText(text, maxLength) {
+  if (typeof text !== 'string' || text.length === 0) return;
+  if (!Number.isInteger(maxLength) || maxLength < 0) return;
+
+  if (text.length <= maxLength) return text;
+
+  const truncatedText = text.slice(0, maxLength - 1);
+
+  return `${truncatedText}…`;
+}
