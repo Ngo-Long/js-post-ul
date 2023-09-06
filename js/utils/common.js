@@ -17,12 +17,12 @@ export function setElementSourceBySelector(container, elementSelector, source) {
   if (!container) return;
 
   const targetElement = container.querySelector(elementSelector);
-  if (targetElement) targetElement.src = source;
-}
-
-export function setImageDefaultSourceOnError(targetElement) {
   if (!targetElement) return;
 
+  // add source to image
+  targetElement.src = source;
+
+  // set image default source on error
   targetElement.addEventListener('error', () => {
     targetElement.src = 'https://placehold.co/600x400?text=Thumbnail';
   });
