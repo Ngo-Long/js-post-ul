@@ -1,8 +1,3 @@
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-// to use fromNow function
-dayjs.extend(relativeTime);
-
 import postApi from './api/postApi';
 import {
   truncateText,
@@ -10,6 +5,12 @@ import {
   setElementTextContent,
   setElementSourceBySelector,
 } from './utils/index';
+
+// setup library
+import debounce from 'lodash.debounce';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+dayjs.extend(relativeTime); // to use fromNow function
 
 // global value
 const paginationElement = getPaginationElement();
@@ -22,6 +23,9 @@ const paginationElement = getPaginationElement();
 
     // attach event prevLink and nextLink
     initPagination();
+
+    // attach event 'input' search posts
+    initSearch();
 
     // extract website URL get from `?_page=1&_limit=6`
     const queryParams = new URLSearchParams(window.location.search);
@@ -76,21 +80,49 @@ function handleNexClink(e) {
   handleFilterChange('_page', page + 1);
 }
 
+function initSearch() {
+  const searchInput = document.getElementById('searchInput');
+  if (!searchInput) return;
+
+  // set default value from query params
+  const queryParams = new URLSearchParams(window.location.search);
+  if (queryParams.get('title_like')) {
+    searchInput.value = queryParams.get('title_like');
+  }
+
+  // use library `debounce`
+  const debounceSearch = debounce((e) => {
+    const valueText = e.target.value.replace(/\s+/g, ' ').trim();
+
+    handleFilterChange('title_like', valueText);
+  }, 500);
+
+  searchInput.addEventListener('input', debounceSearch);
+}
+
 async function handleFilterChange(filterName, filterValue) {
-  // update quey params
-  const url = new URL(window.location);
-  url.searchParams.set(filterName, filterValue);
-  history.pushState({}, '', url);
+  try {
+    // update quey params
+    const url = new URL(window.location);
+    url.searchParams.set(filterName, filterValue);
 
-  // fetch API
-  const { data, pagination } = await postApi.getAll(url.searchParams);
+    // reset page if needed
+    if (filterName === 'title_like') url.searchParams.set('_page', 1);
 
-  renderPostList(data);
-  renderPagination(pagination);
+    history.pushState({}, '', url);
+
+    // fetch API
+    const { data, pagination } = await postApi.getAll(url.searchParams);
+
+    renderPostList(data);
+    renderPagination(pagination);
+  } catch (error) {
+    console.log('Failed: ', error);
+  }
 }
 
 function renderPostList(postList) {
-  if (!Array.isArray(postList) || postList.length === 0) return;
+  if (!Array.isArray(postList)) return;
 
   const ulElement = document.getElementById('postList');
   if (!ulElement) return;
@@ -113,6 +145,7 @@ function createPostElement(post) {
   const postTemplate = document.getElementById('postTemplate');
   if (!postTemplate) return;
 
+  // clone item
   const liElement = postTemplate.content.firstElementChild.cloneNode(true);
   if (!liElement) return;
 
