@@ -4,13 +4,49 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime);
 
 import postApi from './api/postApi';
-import { setElementTextContent, setElementSourceBySelector, truncateText } from './utils/index';
+import {
+  truncateText,
+  getPaginationElement,
+  setElementTextContent,
+  setElementSourceBySelector,
+} from './utils/index';
 
-// ----------------------------------------------------------
+// global value
+const paginationElement = getPaginationElement();
+
+// asynchronous function that make HTTP requests use axiosClient
+(async () => {
+  try {
+    // set default for _limit and _page if does not exist
+    initURL();
+
+    // attach event prevLink and nextLink
+    initPagination();
+
+    // extract website URL get from `?_page=1&_limit=6`
+    const queryParams = new URLSearchParams(window.location.search);
+
+    // use `await` để chờ cho đến khi yêu cầu GET tới địa chỉ
+    const { data, pagination } = await postApi.getAll(queryParams);
+
+    renderPostList(data);
+    renderPagination(pagination);
+  } catch (error) {
+    console.log('get all failed', error);
+  }
+})();
+
+function initURL() {
+  const url = new URL(window.location);
+
+  // update search params if need
+  if (!url.searchParams.get('_limit')) url.searchParams.set('_limit', 6);
+  if (!url.searchParams.get('_page')) url.searchParams.set('_page', 1);
+
+  history.pushState({}, '', url);
+}
+
 function initPagination() {
-  const paginationElement = document.getElementById('pagination');
-  if (!paginationElement) return;
-
   // find and attach event prev link
   const prevLink = paginationElement.firstElementChild?.firstElementChild;
   if (prevLink) prevLink.addEventListener('click', handlePrevClink);
@@ -23,32 +59,51 @@ function initPagination() {
 function handlePrevClink(e) {
   e.preventDefault();
 
-  console.log('hi');
+  const page = Number.parseInt(paginationElement.dataset.page) || 1;
+  if (page <= 1) return;
+
+  handleFilterChange('_page', page - 1);
 }
 
 function handleNexClink(e) {
   e.preventDefault();
-  console.log('ho');
+
+  const page = Number.parseInt(paginationElement.dataset.page) || 1;
+  const totalPages = Number.parseInt(paginationElement.dataset.totalPages);
+
+  if (page >= totalPages) return;
+
+  handleFilterChange('_page', page + 1);
 }
 
-function handleFilterChange(filterName, filterValue) {
+async function handleFilterChange(filterName, filterValue) {
   // update quey params
   const url = new URL(window.location);
   url.searchParams.set(filterName, filterValue);
   history.pushState({}, '', url);
 
   // fetch API
-  // re-render post list
+  const { data, pagination } = await postApi.getAll(url.searchParams);
+
+  renderPostList(data);
+  renderPagination(pagination);
 }
 
-function initURL() {
-  const url = new URL(window.location);
+function renderPostList(postList) {
+  if (!Array.isArray(postList) || postList.length === 0) return;
 
-  // update search params if need
-  if (!url.searchParams.get('_page')) url.searchParams.set('_page', 1);
-  if (!url.searchParams.get('_limit')) url.searchParams.set('_limit', 12);
+  const ulElement = document.getElementById('postList');
+  if (!ulElement) return;
 
-  history.pushState({}, '', url);
+  // clear ulElement
+  ulElement.textContent = '';
+
+  // add
+  postList.forEach((post) => {
+    let liElement = createPostElement(post);
+
+    ulElement.appendChild(liElement);
+  });
 }
 
 function createPostElement(post) {
@@ -74,24 +129,8 @@ function createPostElement(post) {
   return liElement;
 }
 
-function renderPostList(postList) {
-  if (!Array.isArray(postList) || postList.length === 0) return;
-
-  const ulElement = document.getElementById('postList');
-  if (!ulElement) return;
-
-  postList.forEach((post) => {
-    let liElement = createPostElement(post);
-
-    ulElement.appendChild(liElement);
-  });
-}
-
 function renderPagination(pagination) {
   if (!pagination) return;
-
-  const paginationElement = document.getElementById('pagination');
-  if (!paginationElement) return;
 
   // calc total pages
   const { _page, _limit, _totalRows } = pagination;
@@ -106,24 +145,6 @@ function renderPagination(pagination) {
   else paginationElement.firstElementChild?.classList.remove('disabled');
 
   // check if enable/disable prev links
-  if (_limit >= totalPages) paginationElement.lastElementChild?.classList.add('disabled');
+  if (_page >= totalPages) paginationElement.lastElementChild?.classList.add('disabled');
   else paginationElement.lastElementChild?.classList.remove('disabled');
 }
-
-// asynchronous function that make HTTP requests use axiosClient
-(async () => {
-  try {
-    initPagination();
-    initURL();
-
-    const queryParams = new URLSearchParams(window.location.search);
-
-    // use `await` để chờ cho đến khi yêu cầu GET tới địa chỉ
-    const { data, pagination } = await postApi.getAll(queryParams);
-
-    renderPostList(data);
-    renderPagination(pagination);
-  } catch (error) {
-    console.log('get all failed', error);
-  }
-})();
