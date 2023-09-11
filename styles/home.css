@@ -81,10 +81,7 @@
   opacity: 1;
 }
 
-/**************
-  POSTS NAV
-*/
-
+/* POSTS NAV
 /* Use primary color for page link */
 .posts-nav .page-item.active .page-link {
   color: white;
