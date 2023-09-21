@@ -5,7 +5,7 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 dayjs.extend(relativeTime); // to use fromNow function
 
 export function renderPostList(elementId, postList) {
-  if (!Array.isArray(postList)) return;
+  if (!elementId || !Array.isArray(postList)) return;
 
   const ulElement = document.getElementById(elementId);
   if (!ulElement) return;
@@ -34,10 +34,17 @@ export function createPostElement(post) {
 
   // updata title, desc, author, thumbnail
   setElementTextContent(liElement, '[data-id="title"]', post.title);
-  setElementTextContent(liElement, '[data-id="description"]', post.description);
   setElementTextContent(liElement, '[data-id="description"]', truncateText(post.description, 100));
   setElementTextContent(liElement, '[data-id="author"]', post.author);
   setElementSourceBySelector(liElement, '[data-id="thumbnail"]', post.imageUrl);
+
+  // attach event
+  const postItem = liElement.firstElementChild;
+  if (postItem) {
+    postItem.addEventListener('click', () => {
+      window.location.assign(`/post-detail.html?id=${post.id}`);
+    });
+  }
 
   // calculate timespan
   setElementTextContent(liElement, '[data-id="timeSpan"]', ` - ${dayjs(post.updatedAt).fromNow()}`);
