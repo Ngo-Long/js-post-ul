@@ -1,5 +1,5 @@
 import postApi from './api/postApi';
-import { setElementTextContent } from './utils/common';
+import { registerLightbox, setElementTextContent } from './utils/index';
 
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -8,6 +8,13 @@ dayjs.extend(relativeTime); // to use fromNow function
 // main
 (async () => {
   try {
+    registerLightbox({
+      modalId: 'lightbox',
+      selectorImage: 'img[data-id="lightboxImg"]',
+      selectorPrev: 'button[data-id="lightboxPrev"]',
+      selectorNext: 'button[data-id="lightboxNext"]',
+    });
+
     const queryParams = new URLSearchParams(window.location.search);
     const postId = queryParams.get('id');
     if (!postId) {
@@ -25,6 +32,14 @@ dayjs.extend(relativeTime); // to use fromNow function
 function renderPostDetail(post) {
   if (!post) return;
 
+  // attach link
+  const goToEditPageLink = document.getElementById('goToEditPageLink');
+  if (goToEditPageLink) {
+    goToEditPageLink.href = `/add-edit-post.html?${post.id}`;
+    goToEditPageLink.innerHTML = '<i class="fas fa-edit"></i> Edit post';
+  }
+
+  // update
   const postHeroImage = document.getElementById('postHeroImage');
   if (postHeroImage) {
     postHeroImage.style.backgroundImage = `url('${post.imageUrl}')`;
@@ -34,13 +49,6 @@ function renderPostDetail(post) {
       postHeroImage.src = 'https://placehold.co/1368x400?text=Thumbnail';
     });
   }
-
-  const goToEditPageLink = document.getElementById('goToEditPageLink');
-  if (goToEditPageLink) {
-    goToEditPageLink.href = `/add-edit-post.html?${post.id}`;
-    goToEditPageLink.innerHTML = '<i class="fas fa-edit"></i> Edit post';
-  }
-
   setElementTextContent(document, '#postDetailTitle', post.title);
   setElementTextContent(document, '#postDetailAuthor', post.author);
   setElementTextContent(document, '#postDetailDescription', post.description);
