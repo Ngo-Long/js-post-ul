@@ -32,19 +32,16 @@ export function createPostElement(post) {
   const liElement = postTemplate.content.firstElementChild.cloneNode(true);
   if (!liElement) return;
 
+  // attach link
+  liElement.addEventListener('click', () => {
+    window.location.assign(`/post-detail.html?id=${post.id}`);
+  });
+
   // updata title, desc, author, thumbnail
   setElementTextContent(liElement, '[data-id="title"]', post.title);
   setElementTextContent(liElement, '[data-id="description"]', truncateText(post.description, 100));
   setElementTextContent(liElement, '[data-id="author"]', post.author);
   setElementSourceBySelector(liElement, '[data-id="thumbnail"]', post.imageUrl);
-
-  // attach event
-  const postItem = liElement.firstElementChild;
-  if (postItem) {
-    postItem.addEventListener('click', () => {
-      window.location.assign(`/post-detail.html?id=${post.id}`);
-    });
-  }
 
   // calculate timespan
   setElementTextContent(liElement, '[data-id="timeSpan"]', ` - ${dayjs(post.updatedAt).fromNow()}`);

@@ -24,6 +24,17 @@ export function registerLightbox({ modalId, selectorImage, selectorPrev, selecto
 
     showImageAtIndex(currentIndex);
     showModalLightbox(modalId);
+
+    // attach event button
+    prevBtn.addEventListener('click', () => {
+      currentIndex = (--currentIndex + imageList.length) % imageList.length;
+      showImageAtIndex(currentIndex);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      currentIndex = ++currentIndex % imageList.length;
+      showImageAtIndex(currentIndex);
+    });
   });
 }
 
