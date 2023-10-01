@@ -1,14 +1,35 @@
-export function setElementTextContent(container, elementSelector, text) {
+export function setBackgroundImage(parent, selector, imageUrl) {
+  if (!parent) return;
+
+  const element = parent.querySelector(selector);
+  if (element) {
+    element.style.background = `url("${imageUrl}")`;
+
+    element.addEventListener('error', () => {
+      console.log('Sự kiện lỗi đã được kích hoạt');
+      element.style.backgroundImage = "url('https://placehold.co/1368x400?text=Thumbnail')";
+    });
+  }
+}
+
+export function setFieldValue(form, selector, valueText) {
+  if (!form) return;
+
+  const filled = form.querySelector(selector);
+  if (filled) filled.value = valueText;
+}
+
+export function setElementTextContent(container, selector, text) {
   if (!container) return;
 
-  const targetElement = container.querySelector(elementSelector);
+  const targetElement = container.querySelector(selector);
   if (targetElement) targetElement.textContent = text;
 }
 
-export function setElementSourceBySelector(container, elementSelector, source) {
+export function setElementSourceBySelector(container, selector, source) {
   if (!container) return;
 
-  const targetElement = container.querySelector(elementSelector);
+  const targetElement = container.querySelector(selector);
   if (!targetElement) return;
 
   // add source to image

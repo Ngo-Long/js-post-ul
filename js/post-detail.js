@@ -35,7 +35,7 @@ function renderPostDetail(post) {
   // attach link
   const goToEditPageLink = document.getElementById('goToEditPageLink');
   if (goToEditPageLink) {
-    goToEditPageLink.href = `/add-edit-post.html?${post.id}`;
+    goToEditPageLink.href = `/add-edit-post.html?id=${post.id}`;
     goToEditPageLink.innerHTML = '<i class="fas fa-edit"></i> Edit post';
   }
 
