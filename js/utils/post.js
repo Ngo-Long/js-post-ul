@@ -33,9 +33,21 @@ export function createPostElement(post) {
   if (!liElement) return;
 
   // attach link
-  liElement.addEventListener('click', () => {
+  liElement.addEventListener('click', (e) => {
+    // s2: if event is triggered form menu --> ignore
+    const menuElement = liElement.querySelector('.post-item-menu');
+    if (menuElement && menuElement.contains(e.target)) return;
+
     window.location.assign(`/post-detail.html?id=${post.id}`);
   });
+
+  const editButton = liElement.querySelector('[data-id="edit"]');
+  if (editButton) {
+    editButton.addEventListener('click', () => {
+      // s1: e.stopPropagation()
+      window.location.assign(`/add-edit-post.html?id=${post.id}`);
+    });
+  }
 
   // updata title, desc, author, thumbnail
   setElementTextContent(liElement, '[data-id="title"]', post.title);
