@@ -1,35 +1,8 @@
-import { setFieldValue, setBackgroundImage } from './common';
+import { setFieldValue, setBackgroundImage, setElementTextContent } from './common';
+import * as yup from 'yup';
 
-export function initPostForm({ formId, defaultValues, onSubmit }) {
-  if (!formId || !defaultValues) return;
-
-  const postForm = document.getElementById(formId);
-  if (!postForm) return;
-
-  // set value
-  setFormValues(postForm, defaultValues);
-
-  postForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-
-    const formValues = getFormValue(postForm);
-  });
-}
-
-function setFormValues(postForm, defaultValues) {
-  if (!postForm || !defaultValues) return;
-
-  // set form
-  setFieldValue(postForm, 'input[name="title"]', defaultValues?.title);
-  setFieldValue(postForm, 'input[name="author"]', defaultValues?.author);
-  setFieldValue(postForm, 'input[name="imageUrl"]', defaultValues?.imageUrl); // input hidden
-  setFieldValue(postForm, 'textarea[name="description"]', defaultValues?.description);
-
-  // set image
-  setBackgroundImage(document, '#postHeroImage', defaultValues?.imageUrl);
-}
-
-function getFormValue() {
+// 3
+function getFormValue(postForm) {
   const formValues = {};
 
   // s1: query each input and add to values object
@@ -45,4 +18,115 @@ function getFormValue() {
   }
 
   return formValues;
+}
+
+// 2
+function setFormValues(postForm, defaultValues) {
+  if (!postForm || !defaultValues) return;
+
+  // set form
+  setFieldValue(postForm, 'input[name="title"]', defaultValues?.title);
+  setFieldValue(postForm, 'input[name="author"]', defaultValues?.author);
+  setFieldValue(postForm, 'input[name="imageUrl"]', defaultValues?.imageUrl); // input hidden
+  setFieldValue(postForm, 'textarea[name="description"]', defaultValues?.description);
+
+  // set image
+  setBackgroundImage(document, '#postHeroImage', defaultValues?.imageUrl);
+}
+
+// 1
+export function initPostForm({ formId, defaultValues, onSubmit }) {
+  if (!formId || !defaultValues) return;
+
+  const postForm = document.getElementById(formId);
+  if (!postForm) return;
+
+  // set value in form
+  setFormValues(postForm, defaultValues);
+
+  // submit form
+  postForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // get form values
+    const formValues = getFormValue(postForm);
+    formValues.id = defaultValues.id;
+
+    // validation
+    // if valid trigger submit callback
+    // otherwise, show validation errors
+    const isValid = await validatePostForm(postForm, formValues);
+    if (!isValid) return;
+
+    onSubmit?.(formValues);
+  });
+}
+
+// 5
+function setFieldError(postForm, name, error) {
+  const element = postForm.querySelector(`[name="${name}"]`);
+  if (element) {
+    element.setCustomValidity(error);
+    setElementTextContent(element.parentElement, '.invalid-feedback', error);
+  }
+}
+
+// 4
+async function validatePostForm(postForm, formValues) {
+  if (!postForm || !formValues) return;
+
+  try {
+    // reset previous errors
+    ['title', 'author'].forEach((name) => setFieldError(postForm, name, ''));
+
+    const schema = getPostSchema();
+    await schema.validate(formValues, { abortEarly: false });
+  } catch (error) {
+    console.log(error.name); // ValidationError
+    console.log(error.errors); // array message error ?
+    console.log(error.inner); // arr all
+
+    const errorLog = {};
+
+    if (error.name !== 'ValidationError' && !Array.isArray(error.inner)) return;
+
+    for (const validationError of error.inner) {
+      const name = validationError.path; // which field
+
+      // ignore if the field is already logged
+      if (errorLog[name]) continue;
+
+      // set field error and mark as logged
+      setFieldError(postForm, name, validationError.message);
+      errorLog[name] = true;
+
+      console.log(validationError.path); // which field
+      console.log(validationError.message); // which error message
+    }
+  }
+
+  // add was-validated class to form element
+  const isValid = postForm.checkValidity();
+  if (!isValid) postForm.classList.add('was-validated');
+
+  return isValid;
+}
+
+// 6
+function getPostSchema() {
+  // typeError('Please enter a valid title')
+  return yup.object().shape({
+    title: yup.string().required('Please enter title').typeError('Please enter a valid title'),
+    author: yup
+      .string()
+      .required('Please enter author')
+      .test(
+        'At-least-two-words',
+        'Please enter at least two words',
+        // nếu false thì show desc error
+        (value) => value.split(' ').filter((x) => !!x && x.length >= 3).length >= 2,
+      )
+      .typeError('Please enter a valid author'),
+    description: yup.string().typeError('Please enter a valid descrition'),
+  });
 }

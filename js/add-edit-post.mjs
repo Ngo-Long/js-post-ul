@@ -1,5 +1,24 @@
 import postApi from './api/postApi';
-import { initPostForm } from './utils/index';
+import { initPostForm, toast } from './utils/index';
+
+async function handleOnSummit(formValues) {
+  try {
+    // call api add / update
+    // s1: based on search params (check id)
+    // s2: check id in formValues
+    const savePost = formValues.id
+      ? await postApi.update(formValues)
+      : await postApi.add(formValues);
+
+    // show success message
+    toast.success('Save post successfuly!');
+
+    // redirect to detail page
+    setTimeout(() => window.location.assign(`/post-detail.html?id=${savePost.id}`), 2500);
+  } catch (error) {
+    toast.error(`Error: ${error.message}`);
+  }
+}
 
 // main
 (async () => {
@@ -19,7 +38,7 @@ import { initPostForm } from './utils/index';
     initPostForm({
       formId: 'postForm',
       defaultValues,
-      onSubmit: (formValues) => console.log('submit', formValues),
+      onSubmit: handleOnSummit,
     });
   } catch (error) {
     console.log('failed to add edit post', error);
