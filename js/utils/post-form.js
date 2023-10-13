@@ -34,6 +34,26 @@ function setFormValues(postForm, defaultValues) {
   setBackgroundImage(document, '#postHeroImage', defaultValues?.imageUrl);
 }
 
+function showLoading(postForm) {
+  if (!postForm) return;
+
+  const submit = postForm.querySelector('[name="submit"]');
+  if (submit) {
+    submit.disabled = true;
+    submit.textContent = 'Loading...';
+  }
+}
+
+function hideLoading(postForm) {
+  if (!postForm) return;
+
+  const submit = postForm.querySelector('[name="submit"]');
+  if (submit) {
+    submit.disabled = false;
+    submit.textContent = 'Save';
+  }
+}
+
 // 1
 export function initPostForm({ formId, defaultValues, onSubmit }) {
   if (!formId || !defaultValues) return;
@@ -43,10 +63,17 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
 
   // set value in form
   setFormValues(postForm, defaultValues);
+  let isSubmitting = false;
 
   // submit form
   postForm.addEventListener('submit', async (e) => {
     e.preventDefault();
+
+    // prevent other submission
+    if (isSubmitting) return;
+
+    showLoading(postForm);
+    isSubmitting = true;
 
     // get form values
     const formValues = getFormValue(postForm);
@@ -58,7 +85,10 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
     const isValid = await validatePostForm(postForm, formValues);
     if (!isValid) return;
 
-    onSubmit?.(formValues);
+    await onSubmit?.(formValues);
+
+    hideLoading(postForm);
+    isSubmitting = false;
   });
 }
 
