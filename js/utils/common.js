@@ -7,7 +7,7 @@ export function setBackgroundImage(parent, selector, imageUrl) {
 
     element.addEventListener('error', () => {
       console.log('Sự kiện lỗi đã được kích hoạt');
-      element.style.backgroundImage = "url('https://placehold.co/1368x400?text=Thumbnail')";
+      element.style.backgroundImage = 'url("https://placehold.co/1368x400?text=Thumbnail")';
     });
   }
 }

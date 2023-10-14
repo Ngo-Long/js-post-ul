@@ -27,10 +27,10 @@ function setFormValues(postForm, defaultValues) {
   // set form
   setFieldValue(postForm, 'input[name="title"]', defaultValues?.title);
   setFieldValue(postForm, 'input[name="author"]', defaultValues?.author);
-  setFieldValue(postForm, 'input[name="imageUrl"]', defaultValues?.imageUrl); // input hidden
   setFieldValue(postForm, 'textarea[name="description"]', defaultValues?.description);
 
   // set image
+  setFieldValue(postForm, 'input[name="imageUrl"]', defaultValues?.imageUrl); // input hidden
   setBackgroundImage(document, '#postHeroImage', defaultValues?.imageUrl);
 }
 
@@ -54,6 +54,19 @@ function hideLoading(postForm) {
   }
 }
 
+function initRandomImage(postForm) {
+  const randomBtn = document.getElementById('postChangeImage');
+  if (!randomBtn) return;
+
+  randomBtn.addEventListener('click', () => {
+    const randomNumber = Math.round(Math.random() * 1000);
+    const imageUrl = `https://picsum.photos/id/${randomNumber}/1368/400`;
+
+    setFieldValue(postForm, '[name="imageUrl"]', imageUrl); // input hidden
+    setBackgroundImage(document, '#postHeroImage', imageUrl);
+  });
+}
+
 // 1
 export function initPostForm({ formId, defaultValues, onSubmit }) {
   if (!formId || !defaultValues) return;
@@ -64,6 +77,8 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
   // set value in form
   setFormValues(postForm, defaultValues);
   let isSubmitting = false;
+
+  initRandomImage(postForm);
 
   // submit form
   postForm.addEventListener('submit', async (e) => {
@@ -83,9 +98,7 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
     // if valid trigger submit callback
     // otherwise, show validation errors
     const isValid = await validatePostForm(postForm, formValues);
-    if (!isValid) return;
-
-    await onSubmit?.(formValues);
+    if (isValid) await onSubmit?.(formValues);
 
     hideLoading(postForm);
     isSubmitting = false;
@@ -107,7 +120,7 @@ async function validatePostForm(postForm, formValues) {
 
   try {
     // reset previous errors
-    ['title', 'author'].forEach((name) => setFieldError(postForm, name, ''));
+    ['title', 'author', 'imageUrl'].forEach((name) => setFieldError(postForm, name, ''));
 
     const schema = getPostSchema();
     await schema.validate(formValues, { abortEarly: false });
@@ -158,5 +171,10 @@ function getPostSchema() {
       )
       .typeError('Please enter a valid author'),
     description: yup.string().typeError('Please enter a valid descrition'),
+    imageUrl: yup
+      .string()
+      .required('Please random a background image')
+      .url('Please enter a valid URL')
+      .typeError('Please enter a valid image'),
   });
 }

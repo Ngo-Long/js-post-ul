@@ -69,7 +69,7 @@
               <input type="text" class="form-control" name="title" inputmode="text" autocomplete="on"
                 placeholder="Eg: Learning JS is fun" required />
               <div class="invalid-feedback">
-                Ooops! Please write a nice title for your post &gt;.&lt;
+                Please write a nice title &gt;.&lt;
               </div>
             </div>
 
@@ -94,11 +94,13 @@
                 <a href="https://picsum.photos">Picsum service</a> to get a random image.
               </small>
 
-              <input type="hidden" name="imageUrl" value="">
+              <input type="text" name="imageUrl" class="d-none" value="">
 
               <button type="button" id="postChangeImage" class="btn btn-dark mt-3">
                 Change post image
               </button>
+
+              <div class="invalid-feedback">Please enter a valid URL!</div>
             </div>
 
             <div class="text-center mb-3">
