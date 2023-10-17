@@ -78,7 +78,7 @@
               <input type="text" name="author" class="form-control" inputmode="text" autocomplete="username"
                 placeholder="Eg: Ngo Long" required />
 
-              <div class="invalid-feedback">Please enter author of this post!</div>
+              <div class="invalid-feedback"></div>
             </div>
 
             <div class="form-group mb-3">
@@ -87,6 +87,25 @@
             </div>
 
             <div class="form-group mb-3">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="imageSource" id="imageSourcePicsum" checked
+                  value="picsum">
+
+                <label class="form-check-label" for="imageSourcePicsum">
+                  Random image using picsum.photos
+                </label>
+              </div>
+
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="imageSource" id="imageSourceUpdate" value="upload">
+
+                <label class="form-check-label" for="imageSourceUpdate">
+                  Upload image from your computer
+                </label>
+              </div>
+            </div>
+
+            <div class="form-group mb-3" data-id="imageSource" data-image-source="picsum">
               <label for="postChangeImage">Image</label>
 
               <small id="passwordHelpBlock" class="form-text text-muted">
@@ -100,7 +119,15 @@
                 Change post image
               </button>
 
-              <div class="invalid-feedback">Please enter a valid URL!</div>
+              <div class="invalid-feedback"></div>
+            </div>
+
+            <div class="input-group mb-3" data-id="imageSource" data-image-source="upload" hidden>
+              <input name="image" type="file" class="form-control" id="updateImage" accept="image/*">
+
+              <label class="input-group-text" for="updateImage">Upload</label>
+
+              <div class="invalid-feedback"></div>
             </div>
 
             <div class="text-center mb-3">

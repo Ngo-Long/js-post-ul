@@ -34,6 +34,7 @@ function setFormValues(postForm, defaultValues) {
   setBackgroundImage(document, '#postHeroImage', defaultValues?.imageUrl);
 }
 
+// 7
 function showLoading(postForm) {
   if (!postForm) return;
 
@@ -44,6 +45,7 @@ function showLoading(postForm) {
   }
 }
 
+// 8
 function hideLoading(postForm) {
   if (!postForm) return;
 
@@ -67,6 +69,19 @@ function initRandomImage(postForm) {
   });
 }
 
+function initUpdateImage(postForm) {
+  const updateImage = document.querySelector('[name="image"]');
+  if (!updateImage) return;
+
+  updateImage.addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setBackgroundImage(document, '#postHeroImage', imageUrl);
+    }
+  });
+}
+
 // 1
 export function initPostForm({ formId, defaultValues, onSubmit }) {
   if (!formId || !defaultValues) return;
@@ -79,6 +94,8 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
   let isSubmitting = false;
 
   initRandomImage(postForm);
+  initRadioImageSource(postForm);
+  initUpdateImage(postForm);
 
   // submit form
   postForm.addEventListener('submit', async (e) => {
@@ -120,7 +137,7 @@ async function validatePostForm(postForm, formValues) {
 
   try {
     // reset previous errors
-    ['title', 'author', 'imageUrl'].forEach((name) => setFieldError(postForm, name, ''));
+    ['title', 'author', 'imageUrl', 'image'].forEach((name) => setFieldError(postForm, name, ''));
 
     const schema = getPostSchema();
     await schema.validate(formValues, { abortEarly: false });
@@ -157,7 +174,6 @@ async function validatePostForm(postForm, formValues) {
 
 // 6
 function getPostSchema() {
-  // typeError('Please enter a valid title')
   return yup.object().shape({
     title: yup.string().required('Please enter title').typeError('Please enter a valid title'),
     author: yup
@@ -171,10 +187,43 @@ function getPostSchema() {
       )
       .typeError('Please enter a valid author'),
     description: yup.string().typeError('Please enter a valid descrition'),
-    imageUrl: yup
+    imageSource: yup
       .string()
-      .required('Please random a background image')
-      .url('Please enter a valid URL')
-      .typeError('Please enter a valid image'),
+      .required('Please enter an image source')
+      .oneOf(['picsum', 'upload'], 'Invalid image source'),
+    imageUrl: yup.string().when('imageSource', {
+      is: 'picsum',
+      then: yup
+        .string()
+        .required('Please random a background image')
+        .url('Please enter a valid URL'),
+    }),
+    image: yup.mixed().when('imageSource', {
+      is: 'upload',
+      then: yup
+        .mixed()
+        .test('requied', 'Please select an image to upload', (file) => Boolean(file?.name))
+        .test('max-size', 'The image is to large (max 3mb)', (file) => {
+          const fileSize = file?.size || 0;
+          const MAX_SIZE = 3 * 1024 * 1024; // 3MB
+          return fileSize < MAX_SIZE;
+        }),
+    }),
+  });
+}
+
+function initRadioImageSource(postForm) {
+  const radioList = postForm.querySelectorAll('[name="imageSource"]');
+  if (!radioList) return;
+
+  radioList.forEach((radio) => {
+    radio.addEventListener('change', (e) => renderImageSourceControl(postForm, e.target.value));
+  });
+}
+
+function renderImageSourceControl(postForm, selectedValue) {
+  const controlList = postForm.querySelectorAll('[data-id="imageSource"]');
+  controlList.forEach((control) => {
+    control.hidden = control.dataset.imageSource !== selectedValue;
   });
 }

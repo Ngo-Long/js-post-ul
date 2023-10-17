@@ -1,7 +1,24 @@
 import postApi from './api/postApi';
 import { initPostForm, toast } from './utils/index';
 
+function removeUnusedFieds(formValues) {
+  const payload = { ...formValues };
+
+  // imageSource = 'upload' --> delete imageUrl
+  // imageSource = 'picsum' --> delete image
+  payload.imageSource === 'upload' ? delete payload.imageUrl : delete payload.image;
+
+  // finally remove imageSource
+  delete payload.imageSource;
+
+  return payload;
+}
+
 async function handleOnSummit(formValues) {
+  const payload = removeUnusedFieds(formValues);
+
+  console.log('sumbit', { formValues, payload });
+  return;
   try {
     // call api add / update
     // s1: based on search params (check id)
