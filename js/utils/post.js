@@ -49,6 +49,18 @@ export function createPostElement(post) {
     });
   }
 
+  const removeButton = liElement.querySelector('[data-id="remove"]');
+  if (removeButton) {
+    removeButton.addEventListener('click', () => {
+      const customEvent = new CustomEvent('post-delete', {
+        bubbles: true,
+        detail: post,
+      });
+
+      removeButton.dispatchEvent(customEvent);
+    });
+  }
+
   // updata title, desc, author, thumbnail
   setElementTextContent(liElement, '[data-id="title"]', post.title);
   setElementTextContent(liElement, '[data-id="description"]', truncateText(post.description, 100));

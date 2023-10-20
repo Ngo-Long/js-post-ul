@@ -26,13 +26,19 @@ const postApi = {
     return axiosClient.delete(url);
   },
 
-  // DEMO: want to update more something
-  // updateFormData(data) {
-  //   const url = `/post/${data.id}`;
-  //   return axiosClient.patch(url, data, {
-  //     headers: { 'Content-Type': 'multipart/form-data' },
-  //   });
-  // },
+  addFormData(data) {
+    const url = '/with-thumbnail/posts';
+    return axiosClient.post(url, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
+
+  updateFormData(data) {
+    const url = `/with-thumbnail/posts/${data.get('id')}`;
+    return axiosClient.patch(url, data, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+  },
 };
 
 export default postApi;

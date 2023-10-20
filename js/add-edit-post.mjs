@@ -11,21 +11,33 @@ function removeUnusedFieds(formValues) {
   // finally remove imageSource
   delete payload.imageSource;
 
+  // remove id if it's add mode
+  if (!payload.id) delete payload.id;
+
   return payload;
 }
 
-async function handleOnSummit(formValues) {
-  const payload = removeUnusedFieds(formValues);
+function jsonToFormData(jsonObject) {
+  const formData = new FormData();
 
-  console.log('sumbit', { formValues, payload });
-  return;
+  for (const key in jsonObject) {
+    formData.set(key, jsonObject[key]);
+  }
+
+  return formData;
+}
+
+async function handlePostFormSubmit(formValues) {
   try {
+    const payload = removeUnusedFieds(formValues);
+    const formData = jsonToFormData(payload);
+
     // call api add / update
     // s1: based on search params (check id)
     // s2: check id in formValues
     const savePost = formValues.id
-      ? await postApi.update(formValues)
-      : await postApi.add(formValues);
+      ? await postApi.updateFormData(formData)
+      : await postApi.addFormData(formData);
 
     // show success message
     toast.success('Save post successfuly!');
@@ -55,7 +67,7 @@ async function handleOnSummit(formValues) {
     initPostForm({
       formId: 'postForm',
       defaultValues,
-      onSubmit: handleOnSummit,
+      onSubmit: handlePostFormSubmit,
     });
   } catch (error) {
     console.log('failed to add edit post', error);

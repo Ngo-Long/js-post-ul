@@ -78,7 +78,20 @@ function initUpdateImage(postForm) {
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setBackgroundImage(document, '#postHeroImage', imageUrl);
+
+      validateFormField(postForm, { imageSource: 'upload', image: file }, 'image');
     }
+  });
+}
+
+function initValidationOnChange(postForm) {
+  ['title', 'author'].forEach((name) => {
+    const field = postForm.querySelector(`[name="${name}"]`);
+    if (field)
+      field.addEventListener('input', (e) => {
+        const newValue = e.target.value;
+        validateFormField(postForm, { [name]: newValue }, name);
+      });
   });
 }
 
@@ -96,6 +109,7 @@ export function initPostForm({ formId, defaultValues, onSubmit }) {
   initRandomImage(postForm);
   initRadioImageSource(postForm);
   initUpdateImage(postForm);
+  initValidationOnChange(postForm);
 
   // submit form
   postForm.addEventListener('submit', async (e) => {
@@ -171,6 +185,26 @@ async function validatePostForm(postForm, formValues) {
 
   return isValid;
 }
+
+async function validateFormField(form, formValues, name) {
+  try {
+    // clear previous error
+    setFieldError(form, name, '');
+
+    const schema = getPostSchema();
+    await schema.validateAt(name, formValues);
+  } catch (error) {
+    setFieldError(form, name, error.message);
+  }
+
+  // show validation error (if any)
+  const field = form.querySelector(`[name="${name}"]`);
+  if (field && !field.checkValidity()) {
+    field.parentElement.classList.add('was-validated');
+  }
+}
+
+// function
 
 // 6
 function getPostSchema() {
