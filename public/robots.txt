@@ -1,1 +1,6 @@
-    
+User-agent: *
+Disallow: /dang-ky.html
+Disallow: /dang-nhap.html
+Disallow: /abc/
+
+Sitemap: https://htmlcss-04-main.vercel.app/sitemap.xml
